@@ -21,6 +21,9 @@ export default {
   input: 'src/index.js',
   moduleName: 'wzjxtree',
   external: ['jquery'],
+  globals: {
+    jquery: '$'
+  },
   output: {
     file: 'dist/index.js',
     format: 'iife',

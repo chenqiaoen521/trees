@@ -1,6 +1,4 @@
-import jQuery from 'jquery'
 import {create, wzjxtree} from './main.js'
-
 
 // 如果是正式环境的话，不输出日志信息
 if (ENV !== 'production') {
@@ -13,4 +11,4 @@ if (ENV !== 'production') {
   console.log = null
 }
 
-create(jQuery)
+create()

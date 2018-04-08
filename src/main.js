@@ -3,7 +3,7 @@ let instance_counter = 0
 
 export function create () {
   merge()
-	$.extend($.fn, {
+  $.extend($.fn, {
     tree (options) {
       if ( !this.length ) {
         console.warn( "Nothing selected, can't create Trees, returning nothing." )
@@ -77,7 +77,29 @@ fn.init = function (options, el) {
   this._data.core.ready = false
   this._data.core.loaded = false
   this.element.attr('role','tree')
+  if (!this.element.attr('tabindex')) {
+    this.element.attr('tabindex', 0)
+  }
   this.bind()
+  this.trigger("init")
+  this._data.core.original_container_html = this.element.find(" > ul > li").clone(true);
+  this._data.core.original_container_html
+    .find("li").addBack()
+    .contents().filter(function() {
+      return this.nodeType === 3 && (!this.nodeValue || /^\s+$/.test(this.nodeValue));
+    })
+    .remove();
+  this.element.html("<"+"ul class='jstree-container-ul jstree-children' role='group'><"+"li id='j"+this._id+"_loading' class='jstree-initial-node jstree-loading jstree-leaf jstree-last' role='tree-item'><i class='jstree-icon jstree-ocl'></i><"+"a class='jstree-anchor' href='#'><i class='jstree-icon jstree-themeicon-hidden'></i>" + this.get_string("Loading ...") + "</a></li></ul>");
+  this.element.attr('aria-activedescendant','j' + this._id + '_loading');
+  this._data.core.li_height = this.get_container_ul().children("li").first().outerHeight() || 24;
+  this._data.core.node = this._create_prototype_node();
+  /**
+   * triggered after the loading text is shown and before loading starts
+   * @event
+   * @name loading.jstree
+   */
+  this.trigger("loading")
+  this.load_node($.jstree.root)
 }
 fn.bind = function () {
   var word = '',
@@ -238,7 +260,7 @@ fn.bind = function () {
         }, this))
       // THEME RELATED
       .on("init.jstree", $.proxy(function () {
-          var s = this.settings.core.themes;
+          var s = this.settings.themes;
           this._data.core.themes.dots     = s.dots;
           this._data.core.themes.stripes    = s.stripes;
           this._data.core.themes.icons    = s.icons;
@@ -283,10 +305,15 @@ fn.bind = function () {
         }, this));
 }
 fn.unbind = function () {
-  this.element.off('.jstree')
-  $(document).off('.jstree-' + this._id)
+  this.element.off('.wzjxtree')
+  $(document).off('.wzjxtree-' + this._id)
 }
-
-
+fn.trigger = function (ev, data) {
+  if(!data) {
+    data = {}
+  }
+  data.instance = this
+  this.element.triggerHandler(ev.replace('.wzjxtree','') + '.wzjxtree', data)
+}
 
 $.wzjxtree.prototype = fn
